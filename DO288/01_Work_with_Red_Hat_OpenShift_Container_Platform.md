@@ -1,74 +1,14 @@
-# Red Hat OpenShift Container Platform (DO288) Exam Cheat Sheet
+# Red Hat OpenShift Container Platform Objectives Cheat Sheet
 
-## OpenShift Objectives & Essential Commands
-
-| Topic | What You Must Know | Key Commands |
-|---|---|---|
-| **Cluster Access & Navigation** | Understand OpenShift objects: projects, pods, services, routes, deployments. Know how to inspect API resources. | ```bash
-oc login -u <user> -p <pass> <cluster-url>
-oc whoami
-oc api-resources
-oc explain <resource>
-``` |
-| **Projects / Namespaces** | Projects isolate applications and resources. Always verify your active project before deploying. | ```bash
-oc new-project <name>
-oc project <name>
-oc projects
-oc status
-``` |
-| **Deploy Single Container Apps** | Create applications from images and expose them using services/routes. | ```bash
-oc new-app <image>
-oc get pods
-oc expose svc/<service>
-oc create route edge --service=<service>
-``` |
-| **Deploy Multi-Container Apps** | Understand that containers inside the same Pod share networking and storage. Use templates/manifests for multi-component apps. | ```bash
-oc process -f <template.yaml> | oc create -f -
-oc apply -f <file.yaml>
-oc get pods -o wide
-``` |
-| **Health Probes (High Priority)** | Know the difference:<br><br>**Liveness:** Restarts unhealthy containers.<br>**Readiness:** Removes containers from traffic until ready. | ```bash
-oc set probe dc/<app> \
---readiness \
---get-url=http://:8080/health
-
-oc set probe dc/<app> --remove
-``` |
-| **Basic Git Operations** | Know how OpenShift uses Git repositories for builds. Be comfortable with branches, commits, and pushes. | ```bash
-git clone <repo>
-git checkout -b <branch>
-git add .
-git commit -m "message"
-git push
-``` |
-| **Source-to-Image (S2I)** | Core DO288 concept. OpenShift combines source code + builder image to create container images automatically. | ```bash
-oc new-app <builder-image>~<git-url>
-
-oc start-build <buildconfig> --follow
-
-oc logs bc/<name>
-``` |
-| **ImageStreams & Internal Registry** | ImageStreams track container images and trigger deployments when images change. | ```bash
-oc get imagestreams
-
-oc tag <source-image> \
-<project>/<image>:<tag>
-
-oc import-image <image>
-``` |
-| **Private Registry Authentication** | Create registry secrets when pulling images from secured registries. | ```bash
-oc create secret docker-registry <secret-name> \
---docker-server=<registry> \
---docker-username=<user> \
---docker-password=<password>
-
-oc secrets link builder <secret-name>
-``` |
-| **Web Console Usage** | Know Developer Perspective features: Topology, Logs, Events, Builds, Metrics. | UI Tasks:<br>• Open Topology<br>• View Pods<br>• Check Logs<br>• Inspect Events<br>• Monitor Metrics |
-
----
-
-# Exam Must-Know Concepts
-
-## Deployment Flow
-
+| Objective | Instructor Expectations & What You Should Know | Essential `oc` Commands & Tasks | Workplace / Exam Usage |
+|---|---|---|---|
+| **Work with Red Hat OpenShift Container Platform** | Understand developer-centric architecture: how projects, pods, services, routes, and DeploymentConfigs interact. Instructors expect you to know how to navigate the API. | `oc login -u <user> -p <pass> <url>`<br>`oc whoami`<br>`oc api-resources`<br>`oc explain pod.spec` | Logging into the cluster, validating your context, and looking up resource definitions without external documentation. |
+| **Create and work with multiple OpenShift projects** | Treat projects as strict boundaries. You must be able to switch contexts flawlessly. Deploying an app in the wrong project during an exam is a guaranteed failure for that task. | `oc new-project <name>`<br>`oc project <name>`<br>`oc status` | Creating isolated dev/test namespaces and verifying your current active project before running deployment commands. |
+| **Create and deploy single-container applications** | Know how to spin up a container from a pre-existing image and expose it to external traffic using edge or passthrough routes. | `oc new-app <image>`<br>`oc expose dc/<name> --port=<port>`<br>`oc create route edge --service=<name>` | Rapidly deploying stateless web servers or database instances from standard Docker Hub or Red Hat images. |
+| **Create and deploy multi-container applications** | Understand how multiple containers share a Pod (same network IP and volume space) and how to use OpenShift Templates to deploy interconnected apps (like a frontend + database). | `oc process -f <template.yaml> \| oc create -f -`<br>`oc get pods -o wide` | Deploying complex, multi-tier architectures from a single YAML template provided by operations or architecture teams. |
+| **Use application health monitoring** | **Critical Exam Focus:** Instructors test heavily here. Know the strict difference between Liveness (restarts pod if deadlocked) and Readiness (stops routing traffic until ready). | `oc set probe dc/<name> --readiness --get-url=http://:8080/health`<br>`oc set probe dc/<name> --remove` | Preventing downtime by ensuring OpenShift doesn't send user traffic to a container that hasn't finished booting up yet. |
+| **Understand basic Git usage** | Understand how OpenShift pulls from specific branches. You must know how to commit changes so that OpenShift can detect them for builds. | `git clone <url>`<br>`git checkout -b <branch>`<br>`git commit -am "update"`<br>`git push` | Managing the source code that your Source-to-Image (S2I) build configurations rely on. |
+| **Work with Git in OpenShift deployments** | **Core DO288 Concept:** S2I (Source-to-Image). Know how to combine a builder image with a Git repository to compile code directly inside OpenShift. | `oc new-app <builder-image>~<git-url>`<br>`oc start-build <bc> --follow`<br>`oc logs bc/<name>` | Setting up the foundational pipelines that turn raw developer code into running container deployments automatically. |
+| **Configure OpenShift internal registry** | Understand ImageStreams. Instructors want to see you tag images correctly so deployments trigger automatically when a new image is pushed to the internal registry. | `oc get is`<br>`oc tag <source-image> <project>/<is>:<tag>`<br>`oc import-image <is>` | Caching external images locally and managing version control of your application's container images. |
+| **Configure registry requirements** | Know how to authenticate to external registries if your build requires pulling base images from secured, private repositories. | `oc create secret docker-registry <name> --docker-server=<url> --docker-username=<user> ...`<br>`oc secrets link builder <name>` | Ensuring your OpenShift cluster has the necessary credentials to pull required dependencies and base images. |
+| **Manage applications using the web console** | Be able to use the "Developer Perspective" in the UI to visualize topology, view pod logs, and manually trigger builds without using the CLI. | Navigate to **Topology** view, click resources to view **Metrics**, **Logs**, and **Events**. | Troubleshooting complex pod crashes visually when CLI output is too dense or overwhelming. |
